@@ -16,38 +16,38 @@ var (
 		"quattuordecillion"}
 )
 
-func dr(n int, div int) (d, r int) {
+func dr(n, div int) (d, r int) {
 	d, r = n/div, n%div
 	return
 }
 
-func under1000(n int) (st string) {
+func under1000(n int) (s string) {
 	d, r := dr(n, 100)
 	if d == 0 {
 		return under100(n)
 	}
-	st = a[d] + " hundred"
+	s = a[d] + " hundred"
 	if r > 0 {
-		st += " and " + under100(r)
+		s += " and " + under100(r)
 	}
 	return
 }
 
-func under100(n int) (st string) {
+func under100(n int) (s string) {
 	d, r := dr(n, 10)
 	switch {
 	case d < 2:
-		st = a[n]
+		s = a[n]
 	case d < 10:
-		st = b[d-2]
+		s = b[d-2]
 		if r > 0 {
-			st += "-" + a[r]
+			s += "-" + a[r]
 		}
 	}
 	return
 }
 
-func string2slice(s string) []string {
+func groupBy3(s string) []string {
 	// get rid of possible non numeric characters
 	re := regexp.MustCompile(`\d`)
 	s = strings.Join(re.FindAllString(s, -1), "")
@@ -56,8 +56,6 @@ func string2slice(s string) []string {
 
 	var arr []string
 	switch {
-	case d == 0 && r == 0:
-		return arr
 	case r > 0:
 		arr = append(arr, s[0:r])
 		fallthrough
@@ -69,29 +67,31 @@ func string2slice(s string) []string {
 	return arr
 }
 
-// Convert a number represented by a string to its textual representation
-// eg: "123" gives "one hundred and twenty-three"
-// usage of string to handle very big numbers (cf slice 'c')
+// Convert a number represented by a string to its textual representation.
+// Input type is string to handle big numbers (until quattuordecillion).
+//
+// eg: Convert("123") will output "one hundred and twenty-three".
 func Convert(s string) (string, error) {
-	s2s := string2slice(s)
-	if len(s2s) > len(c) {
+	aBy3 := groupBy3(s)
+	if len(aBy3) > len(c) {
 		return "", fmt.Errorf("number too large")
 	}
 
-	indexOfc := len(s2s)
+	indexOfc := len(aBy3)
 	var output string
-	for _, st := range s2s {
-		s2i, err := strconv.Atoi(st)
+	for _, st := range aBy3 {
+		i2convert, err := strconv.Atoi(st)
 		if err != nil {
 			return "", fmt.Errorf("number could not be converted: %v", err)
 		}
 		indexOfc--
-		if s2i == 0 {
+		if i2convert == 0 {
 			continue
 		}
-		output += fmt.Sprintf(" %s %s", under1000(s2i), c[indexOfc])
+		output += fmt.Sprintf(" %s %s", under1000(i2convert), c[indexOfc])
 	}
-	if output == "" && len(s2s) == 1 {
+
+	if output == "" && len(aBy3) == 1 {
 		output = "zero"
 	}
 
